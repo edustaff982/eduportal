@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personnel Management System</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Inter font and general layout */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            padding: 2rem; /* p-8 */
+            width: 100%;
+            max-width: 90%; /* Adjusted for better mobile scaling */
+            /* max-width: 800px; Original desktop max-width, now handled by responsive classes if needed */
+            text-align: center;
+            position: relative; /* Needed for fixed bottom navigation */
+            padding-bottom: 80px; /* Space for fixed navigation */
+        }
+        /* Responsive max-width for larger screens */
+        @media (min-width: 768px) { /* md breakpoint */
+            .container {
+                max-width: 700px;
+            }
+        }
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .container {
+                max-width: 800px;
+            }
+        }
+
+
+        .input-field {
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 0.75rem 1rem; /* py-3 px-4 */
+            width: 100%;
+            margin-bottom: 1rem; /* mb-4 */
+            transition: border-color 0.2s ease-in-out;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6; /* focus:border-blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* focus:ring-blue-500 */
+        }
+        .btn {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            width: 100%;
+            margin-bottom: 0.75rem; /* mb-3 */
+        }
+        .btn:hover {
+            background-color: #2563eb; /* hover:bg-blue-600 */
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .message-box {
+            background-color: #fef2f2; /* bg-red-100 */
+            color: #ef4444; /* text-red-500 */
+            border: 1px solid #fca5a5; /* border-red-300 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            text-align: left;
+            display: none; /* Hidden by default */
+        }
+        .success-box {
+            background-color: #ecfdf5; /* bg-green-100 */
+            color: #10b981; /* text-green-500 */
+            border: 1px solid #a7f3d0; /* border-green-300 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            text-align: left;
+            display: none; /* Hidden by default */
+        }
+        .hidden {
+            display: none !important;
+        }
+        .data-display {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            text-align: left;
+            word-wrap: break-word; /* Ensure long text wraps */
+            overflow-x: auto; /* Enable horizontal scrolling for tables on small screens */
+        }
+        .data-item {
+            margin-bottom: 0.5rem;
+        }
+        .data-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .data-value {
+            color: #374151;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column by default for mobile */
+            gap: 1rem;
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .form-grid {
+                grid-template-columns: 1fr 1fr; /* Two columns on small screens and up */
+            }
+        }
+        .form-group {
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 0.5rem;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem 0;
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.875rem; /* Default font size */
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+            flex: 1; /* Distribute space evenly */
+        }
+        .nav-item:hover {
+            color: #3b82f6;
+        }
+        .nav-item.active {
+            color: #3b82f6;
+        }
+        .nav-icon {
+            font-size: 1.5rem; /* Default icon size */
+            margin-bottom: 0.25rem;
+        }
+        /* Adjust font and icon sizes for smaller screens if needed */
+        @media (max-width: 480px) { /* Extra small screens */
+            .nav-item {
+                font-size: 0.75rem;
+            }
+            .nav-icon {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Table specific styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .data-table th, .data-table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 0.875rem; /* Adjusted for readability on smaller screens */
+        }
+        .data-table th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .section-header {
+            font-size: 1.25rem; /* Default font size */
+            font-weight: 600;
+            color: #374151;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        /* Adjust header font size for smaller screens */
+        @media (max-width: 640px) {
+            .section-header {
+                font-size: 1.1rem;
+            }
+        }
+
+        .edit-section-btn {
+            background-color: #10b981; /* Green */
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            width: auto;
+            display: inline-block;
+        }
+        .edit-section-btn:hover {
+            background-color: #059669;
+        }
+        .home-content-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #fdfdfd;
+        }
+        /* Chat specific styles */
+        .chat-window {
+            height: 400px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            background-color: #f9fafb;
+        }
+        .chat-message {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            max-width: 80%;
+            word-wrap: break-word;
+            text-align: left;
+        }
+        .chat-message.self {
+            background-color: #dbeafe; /* blue-100 */
+            align-self: flex-end;
+        }
+        .chat-message.other {
+            background-color: #e5e7eb; /* gray-200 */
+            align-self: flex-start;
+        }
+        .chat-sender {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #3b82f6; /* blue-500 */
+            margin-bottom: 0.25rem;
+        }
+        .chat-timestamp {
+            font-size: 0.75rem;
+            color: #6b7280; /* gray-500 */
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input-container input {
+            flex-grow: 1;
+            margin-bottom: 0; /* Override default input-field margin */
+        }
+        .chat-input-container button {
+            width: auto;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 0;
+        }
+        .chat-warning {
+            background-color: #fffbeb; /* yellow-100 */
+            color: #d97706; /* yellow-700 */
+            border: 1px solid #fcd34d; /* yellow-400 */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        /* Notification styles */
+        .notification-area {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none; /* Allow clicks through when hidden */
+        }
+        .notification-area.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .notification-area.error {
+            background-color: #ef4444; /* red-500 */
+        }
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Notification Area -->
+        <div id="notificationArea" class="notification-area hidden">
+            <span id="notificationMessage"></span>
+            <button id="notificationCloseBtn" class="notification-close">&times;</button>
+        </div>
+
+        <!-- Message Box for errors -->
+        <div id="messageBox" class="message-box"></div>
+        <!-- Success Box for success messages -->
+        <div id="successBox" class="success-box"></div>
+
+        <!-- Login Section -->
+        <div id="loginSection">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Personnel Data Access</h1>
+            <div id="loginForm">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Enter Personnel No.</h2>
+                <input type="text" id="personnelNoInput" placeholder="Personnel No." class="input-field">
+                <button id="loginBtn" class="btn">Login</button>
+                <p class="text-sm text-gray-500 mt-2">Enter any personnel number to proceed.</p>
+                <button id="registerPageBtn" class="btn bg-purple-500 hover:bg-purple-600 mt-3">Register New Personnel</button>
+            </div>
+        </div>
+
+        <!-- Main Content Sections (visible after login) -->
+        <div id="loggedInContent" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Personnel Management System</h1>
+            <p class="text-gray-600 mb-4">Logged in as Personnel No.: <span id="userIdDisplay" class="font-medium break-all"></span></p>
+
+            <!-- Home Section Content -->
+            <div id="homeSection" class="content-section">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Home</h2>
+                <div id="homeDataContainer">
+                    <!-- Dynamic home content sections will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Assignment Section Content -->
+            <div id="assignmentSection" class="content-section hidden">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Assignments</h2>
+                <div id="assignmentDisplay" class="data-display">
+                    <!-- Assignments will be listed here -->
+                </div>
+                <button id="addAssignmentBtn" class="btn edit-section-btn hidden">Add New Assignment</button>
+            </div>
+
+            <!-- Salary Slip Section Content -->
+            <div id="salarySlipSection" class="content-section hidden">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Salary Slips</h2>
+                <div id="salarySlipContent" class="data-display">
+                    <p class="text-gray-700">Access to payroll registers from 2022 onwards would typically be provided via secure links to Google Drive or a dedicated document management system.</p>
+                    <p class="text-gray-500 mt-2">*(Direct integration with Google Drive API is complex and requires backend authentication, which is beyond the scope of this client-side demo.)*</p>
+                    <p class="text-gray-700 mt-4">Please contact HR for access to your official salary slips.</p>
+                </div>
+            </div>
+
+            <!-- Chat Section Content -->
+            <div id="chatSection" class="content-section hidden">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Group Chat</h2>
+                <div class="chat-warning">
+                    <p>⚠️ **Important:** Messages in this chat are for demonstration purposes only and will be automatically deleted from the database after 24 hours.</p>
+                </div>
+                <div id="chatWindow" class="chat-window">
+                    <!-- Chat messages will be displayed here -->
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatMessageInput" placeholder="Type your message..." class="input-field">
+                    <button id="sendChatMessageBtn" class="btn">Send</button>
+                </div>
+            </div>
+
+            <!-- Profile Section Content (was Dashboard) -->
+            <div id="profileSection" class="content-section hidden">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4">Your Profile</h2>
+                <div id="profileDataDisplay" class="data-display">
+                    <!-- Personnel data will be displayed here in categorized format -->
+                </div>
+                <button id="editProfileDataBtn" class="btn bg-blue-500 hover:bg-blue-600 mt-6">Edit Profile Data</button>
+                <button id="logoutBtn" class="btn bg-red-500 hover:bg-red-600 mt-3">Logout</button>
+            </div>
+        </div>
+
+        <!-- Registration Section -->
+        <div id="registrationSection" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Personnel Registration</h1>
+            <form id="registrationForm" class="form-grid">
+                <!-- Form fields will be dynamically generated here by JavaScript -->
+            </form>
+            <button id="registerBtn" class="btn bg-green-500 hover:bg-green-600 mt-6">Register Personnel</button>
+            <button id="backToLoginFromRegisterBtn" class="btn bg-gray-500 hover:bg-gray-600 mt-3">Back to Login</button>
+        </div>
+
+        <!-- Data Entry/Edit Section (Unified for all data types) -->
+        <div id="dataEntrySection" class="hidden">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Add/Edit Data</h1>
+            <p class="text-gray-600 mb-4">Editing for Personnel No.: <span id="dataEntryPersonnelNoDisplay" class="font-medium break-all"></span></p>
+            <p class="text-gray-600 mb-4">Data Type: <span id="dataEntryDataTypeDisplay" class="font-medium"></span></p>
+
+            <form id="dynamicDataEntryForm" class="form-grid">
+                <!-- Dynamic form fields will be generated here -->
+            </form>
+            <button id="saveDynamicDataBtn" class="btn bg-green-500 hover:bg-green-600 mt-6">Save Data</button>
+            <button id="backFromDataEntryBtn" class="btn bg-gray-500 hover:bg-gray-600 mt-3">Back</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottomNavBar" class="bottom-nav hidden">
+        <div id="navHome" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span>Home</span>
+        </div>
+        <div id="navAssignment" class="nav-item">
+            <span class="nav-icon">📝</span>
+            <span>Assignment</span>
+        </div>
+        <div id="navSalarySlip" class="nav-item">
+            <span class="nav-icon">💰</span>
+            <span>Salary Slip</span>
+        </div>
+        <div id="navChat" class="nav-item">
+            <span class="nav-icon">💬</span>
+            <span>Chat</span>
+        </div>
+        <div id="navProfile" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>Profile</span>
+        </div>
+    </nav>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+            getDatabase,
+            ref,
+            set,
+            onValue,
+            get,
+            push, // Import push for new assignment IDs
+            remove, // Import remove for deleting assignments
+            serverTimestamp, // Import serverTimestamp for chat messages
+            query,
+            orderByChild,
+            endAt,
+            limitToLast
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1E4w4uqYNUVDQx7V8VT_op1foF-4T3Z4",
+            authDomain: "ddemee.firebaseapp.com",
+            projectId: "ddemee",
+            storageBucket: "ddemee.firebasestorage.app",
+            messagingSenderId: "428366833713",
+            appId: "1:428366833713:web:8c78a2fe14c55670988d10",
+            databaseURL: "https://ddemee-default-rtdb.firebaseio.com/"
+        };
+
+        // Firebase App and Services
+        let app;
+        let auth;
+        let rtdb;
+        let currentUserId = null; // To store the current user's Personnel No.
+        let currentUserName = "Unknown User"; // To store the current user's Name for chat
+        let currentEditingDataType = null; // To track which data type is being edited (e.g., 'profile', 'home_dy_deos_info', 'assignment')
+        let currentEditingItemId = null; // To store the ID of the item being edited (for assignments or home sub-items)
+        let currentActiveListeners = {}; // Stores unsubscribe functions for active listeners
+
+
+        // Admin Personnel Number for special permissions
+        const ADMIN_PERSONNEL_NO = '32247202';
+
+        // UI Elements - Sections
+        const loginSection = document.getElementById('loginSection');
+        const loggedInContent = document.getElementById('loggedInContent'); // Container for all logged-in views
+        const homeSection = document.getElementById('homeSection');
+        const assignmentSection = document.getElementById('assignmentSection');
+        const salarySlipSection = document.getElementById('salarySlipSection');
+        const profileSection = document.getElementById('profileSection');
+        const chatSection = document.getElementById('chatSection'); // New chat section
+        const registrationSection = document.getElementById('registrationSection');
+        const dataEntrySection = document.getElementById('dataEntrySection');
+        const bottomNavBar = document.getElementById('bottomNavBar');
+
+        // UI Elements - Login
+        const personnelNoInput = document.getElementById('personnelNoInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerPageBtn = document.getElementById('registerPageBtn');
+
+        // UI Elements - Logged In Content (Common)
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        // UI Elements - Home Section
+        const homeDataContainer = document.getElementById('homeDataContainer'); // Container for dynamic home content
+        // Buttons for home content are now dynamically created within the content sections
+
+        // UI Elements - Assignment Section
+        const assignmentDisplay = document.getElementById('assignmentDisplay');
+        const addAssignmentBtn = document.getElementById('addAssignmentBtn');
+
+        // UI Elements - Profile Section
+        const profileDataDisplay = document.getElementById('profileDataDisplay');
+        const editProfileDataBtn = document.getElementById('editProfileDataBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // UI Elements - Chat Section
+        const chatWindow = document.getElementById('chatWindow');
+        const chatMessageInput = document.getElementById('chatMessageInput');
+        const sendChatMessageBtn = document.getElementById('sendChatMessageBtn');
+
+        // UI Elements - Registration
+        const registrationForm = document.getElementById('registrationForm');
+        const registerBtn = document.getElementById('registerBtn');
+        const backToLoginFromRegisterBtn = document.getElementById('backToLoginFromRegisterBtn');
+
+        // UI Elements - Data Entry
+        const dataEntryPersonnelNoDisplay = document.getElementById('dataEntryPersonnelNoDisplay');
+        const dataEntryDataTypeDisplay = document.getElementById('dataEntryDataTypeDisplay');
+        const dynamicDataEntryForm = document.getElementById('dynamicDataEntryForm');
+        const saveDynamicDataBtn = document.getElementById('saveDynamicDataBtn');
+        const backFromDataEntryBtn = document.getElementById('backFromDataEntryBtn');
+
+        // UI Elements - Navigation
+        const navHome = document.getElementById('navHome');
+        const navAssignment = document.getElementById('navAssignment');
+        const navSalarySlip = document.getElementById('navSalarySlip');
+        const navChat = document.getElementById('navChat'); // New chat nav item
+        const navProfile = document.getElementById('navProfile');
+
+        // General Message Boxes (for in-app notifications)
+        const messageBox = document.getElementById('messageBox'); // Kept for general messages
+        const successBox = document.getElementById('successBox'); // Kept for general messages
+        const notificationArea = document.getElementById('notificationArea'); // New notification banner
+        const notificationMessage = document.getElementById('notificationMessage');
+        const notificationCloseBtn = document.getElementById('notificationCloseBtn');
+
+
+        // --- Field Definitions ---
+        const personnelProfileFields = [
+            { id: 'Name_of_Markaz', label: 'Name of Markaz', required: true, category: 'Personal Info' },
+            { id: 'Name_of_School', label: 'Name of School', required: true, category: 'Institute Info' },
+            { id: 'Personnel_No', label: 'Personnel No.', required: true, isPersonnelNo: true, category: 'Personal Info' },
+            { id: 'Name_of_Employee', label: 'Name of Employee', required: true, category: 'Personal Info' },
+            { id: 'Phone_No', label: 'Phone No', required: false, category: 'Personal Info' },
+            { id: 'CNIC_No', label: 'CNIC No.', required: false, category: 'Personal Info' },
+            { id: 'Date_of_Birth', label: 'Date of Birth', placeholder: 'DD.MM.YYYY', required: false, category: 'Personal Info' },
+            { id: 'Date_of_Retirement', label: 'Date of Retirement', placeholder: 'DD.MM.YYYY', required: false, category: 'Personal Info' },
+            { id: 'Date_of_Appointment_Orders', label: 'Date of Appointment / Orders', placeholder: 'DD.MM.YYYY', required: false, category: 'Institute Info' },
+            { id: 'DDO_Code', label: 'DDO Code', required: false, category: 'Financial Info' },
+            { id: 'Pay_Scale', label: 'Pay Scale', required: false, category: 'Financial Info' },
+            { id: 'Gazetted_Non_Gazetted', label: 'Gazetted / Non Gazetted', required: false, category: 'Institute Info' },
+            { id: 'BPS', label: 'BPS', required: false, category: 'Financial Info' },
+            { id: 'Designation', label: 'Designation', required: false, category: 'Institute Info' },
+            { id: 'Bank_IBAN', label: 'Bank (IBAN)', required: false, category: 'Financial Info' },
+            { id: 'Basic_Pay_Admissible', label: 'Basic Pay Admissible', required: false, category: 'Financial Info' },
+            { id: 'Deduction', label: 'Deduction', required: false, category: 'Financial Info' },
+            { id: 'Posting_Order', label: 'Posting Order', required: false, category: 'Institute Info' },
+            { id: 'Remarks', label: 'Remarks', required: false, category: 'Personal Info' }
+        ];
+
+        // Definitions for different types of content on the home screen
+        const homeScreenContentDefinitions = [
+            {
+                id: 'dy_deos_info',
+                label: 'DY DEOs Information',
+                fields: [
+                    { id: 'Sr_No', label: 'Sr. No', required: false },
+                    { id: 'Name', label: 'Name', required: true },
+                    { id: 'Qualification', label: 'Qualification', required: false },
+                    { id: 'From', label: 'From', required: false },
+                    { id: 'To', label: 'To', required: false },
+                    { id: 'Remarks', label: 'Remarks', required: false }
+                ],
+                displayType: 'table' // Custom display type for DY DEOs
+            },
+            {
+                id: 'short_blog_posts',
+                label: 'Short Blog Post',
+                fields: [
+                    { id: 'Title', label: 'Title', required: true },
+                    { id: 'Content', label: 'Content', required: true, type: 'textarea' }
+                ],
+                displayType: 'list' // Custom display type for blog posts
+            },
+            {
+                id: 'enrolment_data',
+                label: 'Enrolment Data',
+                fields: [
+                    { id: 'Year', label: 'Year', required: true },
+                    { id: 'Students_Enrolled', label: 'Students Enrolled', required: true }
+                ],
+                displayType: 'list'
+            },
+            {
+                id: 'aeos_information',
+                label: 'AEOs Information',
+                fields: [
+                    { id: 'Name', label: 'Name', required: true },
+                    { id: 'Contact', label: 'Contact', required: false }
+                ],
+                displayType: 'list'
+            },
+            {
+                id: 'diary_and_dispatch_cases',
+                label: 'Diary and Dispatch Cases',
+                fields: [
+                    { id: 'Case_ID', label: 'Case ID', required: true },
+                    { id: 'Description', label: 'Description', required: false }
+                ],
+                displayType: 'list'
+            }
+        ];
+
+        const assignmentFields = [
+            { id: 'Assignment_Title', label: 'Assignment Title', required: true }
+        ];
+
+        // Initial DY DEOs data to pre-populate if empty
+        const initialDyDeosRawData = `Sr_No,Name,Qualification,From,To,Remarks
+1,Mazhar Hussain Shah,M.A, M.Ed,30.11.13,01.01.15,Transfer
+2,Tanweer-Ul-Hassan,B.Sc, M.S.Ed,02.01.15,04.12.19,Transfer
+3,Mazhar Hussain Shah,M.Phil (Edu), M.Ed,30.01.20,08.05.21,Promoted
+4,Tanweer-Ul-Hassan,M.Phil (Edu),08.05.21,10.10.23,Transfer
+5,Rai Ghulam Muhammad,M.Phil (Urdu),11.10.23,25.01.25,Transfer
+6,Nasir Iqbal Warraich,M.Phil, M.Ed,25.01.25,05.06.2025,Relieved
+7,Tanweer Ul Hasan,M.Ed,25.07.25,______`;
+
+        /**
+         * Parses a CSV string into an array of objects.
+         * Assumes the first line is headers.
+         * @param {string} csvString - The CSV data as a string.
+         * @returns {Array<object>} An array of objects, where each object is a row.
+         */
+        function parseCsvString(csvString) {
+            const lines = csvString.trim().split('\n');
+            if (lines.length < 1) return [];
+
+            // Clean headers: replace non-alphanumeric (except underscore) and spaces with underscore
+            const headers = lines[0].split(',').map(h => h.trim().replace(/[^a-zA-Z0-9_]/g, '').replace(/\s/g, '_'));
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] ? values[index].trim() : '';
+                });
+                data.push(row);
+            }
+            return data;
+        }
+
+        const initialDyDeosData = parseCsvString(initialDyDeosRawData);
+
+
+        // --- Helper Functions ---
+
+        /**
+         * Detaches all currently active Firebase Realtime Database listeners.
+         */
+        function detachAllListeners() {
+            for (const key in currentActiveListeners) {
+                if (typeof currentActiveListeners[key] === 'function') {
+                    currentActiveListeners[key](); // Call the unsubscribe function
+                    console.log(`Detached listener for: ${key}`);
+                }
+            }
+            currentActiveListeners = {}; // Clear the object
+        }
+
+        /**
+         * Shows a specific main content section and hides others.
+         * @param {HTMLElement} sectionToShow - The section to make visible.
+         * @param {Function} [loadFunction] - Optional function to call to load data for the section.
+         */
+        function showContentSection(sectionToShow, loadFunction = null) {
+            detachAllListeners(); // Detach all listeners before changing sections
+
+            homeSection.classList.add('hidden');
+            assignmentSection.classList.add('hidden');
+            salarySlipSection.classList.add('hidden');
+            profileSection.classList.add('hidden');
+            chatSection.classList.add('hidden'); // Hide chat section
+            dataEntrySection.classList.add('hidden'); // Ensure data entry is hidden
+
+            sectionToShow.classList.remove('hidden');
+
+            // Update active state of nav items
+            navHome.classList.remove('active');
+            navAssignment.classList.remove('active');
+            navSalarySlip.classList.remove('active');
+            navChat.classList.remove('active'); // Deactivate chat nav
+            navProfile.classList.remove('active');
+
+            if (sectionToShow === homeSection) navHome.classList.add('active');
+            else if (sectionToShow === assignmentSection) navAssignment.classList.add('active');
+            else if (sectionToShow === salarySlipSection) navSalarySlip.classList.add('active');
+            else if (sectionToShow === chatSection) navChat.classList.add('active'); // Activate chat nav
+            else if (sectionToShow === profileSection) navProfile.classList.add('active');
+
+            // Clear any messages when changing sections
+            messageBox.style.display = 'none';
+            successBox.style.display = 'none';
+            notificationArea.classList.remove('show'); // Hide notifications on section change
+
+            // Call load function if provided
+            if (loadFunction) {
+                loadFunction();
+            }
+        }
+
+        /**
+         * Shows a specific top-level section (login, loggedInContent, registration, dataEntry) and manages nav bar visibility.
+         * @param {HTMLElement} sectionToShow - The top-level section to make visible.
+         */
+        function showTopLevelSection(sectionToShow) {
+            detachAllListeners(); // Detach all listeners when changing top-level sections
+
+            loginSection.classList.add('hidden');
+            loggedInContent.classList.add('hidden');
+            registrationSection.classList.add('hidden');
+            dataEntrySection.classList.add('hidden');
+            bottomNavBar.classList.add('hidden');
+
+            sectionToShow.classList.remove('hidden');
+
+            if (sectionToShow === loggedInContent || sectionToShow === dataEntrySection) {
+                bottomNavBar.classList.remove('hidden');
+            }
+
+            // Clear messages
+            messageBox.style.display = 'none';
+            successBox.style.display = 'none';
+            notificationArea.classList.remove('show'); // Hide notifications on section change
+        }
+
+        /**
+         * Displays a notification banner at the top of the screen.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'info', 'success', or 'error'.
+         */
+        let notificationTimeout;
+        function showAppNotification(message, type = 'info') {
+            clearTimeout(notificationTimeout); // Clear any existing timeout
+            notificationArea.classList.remove('hidden', 'success', 'error');
+            notificationArea.classList.add('show');
+            notificationMessage.textContent = message;
+
+            if (type === 'success') {
+                notificationArea.style.backgroundColor = '#22c55e'; /* green-500 */
+            } else if (type === 'error') {
+                notificationArea.style.backgroundColor = '#ef4444'; /* red-500 */
+            } else {
+                notificationArea.style.backgroundColor = '#3b82f6'; /* blue-500 */
+            }
+
+            notificationTimeout = setTimeout(() => {
+                notificationArea.classList.remove('show');
+                notificationArea.classList.add('hidden');
+            }, 5000); // Hide after 5 seconds
+        }
+
+        // Close button for notification
+        notificationCloseBtn.addEventListener('click', () => {
+            notificationArea.classList.remove('show');
+            notificationArea.classList.add('hidden');
+            clearTimeout(notificationTimeout);
+        });
+
+        /**
+         * Displays a message in the message box (legacy, prefer showAppNotification for banners).
+         * @param {string} message - The message to display.
+         * @param {boolean} isError - True if it's an error message, false for success.
+         */
+        function showMessage(message, isError = true) {
+            if (isError) {
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+                successBox.style.display = 'none'; // Hide success if error is shown
+            } else {
+                successBox.textContent = message;
+                successBox.style.display = 'block';
+                messageBox.style.display = 'none'; // Hide error if success is shown
+            }
+            // Automatically hide after 5 seconds
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+                successBox.style.display = 'none';
+            }, 5000);
+        }
+
+        /**
+         * Generates form fields dynamically.
+         * @param {HTMLElement} formElement - The form element to populate.
+         * @param {Array} fieldsDefinition - Array defining the fields (personnelProfileFields, homeScreenFields, etc.).
+         * @param {string} formTypePrefix - 'reg' for registration, 'data' for data entry, 'assign' for assignment.
+         * @param {string} currentPersonnelNo - The current user's personnel number (for read-only fields).
+         */
+        function generateDynamicFormFields(formElement, fieldsDefinition, formTypePrefix, currentPersonnelNo = '') {
+            formElement.innerHTML = ''; // Clear existing fields
+            fieldsDefinition.forEach(field => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                const inputId = formTypePrefix + field.id;
+
+                let readonlyAttr = '';
+                // Personnel_No is read-only in data entry, but editable in registration
+                if (field.isPersonnelNo && formTypePrefix === 'data') {
+                    readonlyAttr = 'readonly';
+                }
+
+                const requiredAttr = field.required ? 'required' : '';
+                const placeholderAttr = field.placeholder ? `placeholder="${field.placeholder}"` : '';
+                const inputType = field.type === 'textarea' ? 'textarea' : 'input';
+                const inputClass = field.type === 'textarea' ? 'input-field h-32 resize-none' : 'input-field';
+
+                formGroup.innerHTML = `
+                    <label for="${inputId}">${field.label}</label>
+                    <${inputType} type="text" id="${inputId}" class="${inputClass}" ${readonlyAttr} ${requiredAttr} ${placeholderAttr}></${inputType}>
+                `;
+                formElement.appendChild(formGroup);
+
+                // Pre-fill Personnel_No if it's the data entry form and the field is Personnel_No
+                if (field.isPersonnelNo && formTypePrefix === 'data') {
+                    document.getElementById(inputId).value = currentPersonnelNo;
+                }
+            });
+        }
+
+        /**
+         * Collects data from a dynamically generated form.
+         * @param {Array} fieldsDefinition - Array defining the fields.
+         * @param {string} formTypePrefix - 'reg', 'data', or 'assign'.
+         * @returns {object} Collected data.
+         */
+        function getDynamicFormData(fieldsDefinition, formTypePrefix) {
+            const data = {};
+            fieldsDefinition.forEach(field => {
+                const inputId = formTypePrefix + field.id;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement) {
+                    data[field.id] = inputElement.value.trim();
+                }
+            });
+            return data;
+        }
+
+        /**
+         * Populates a dynamically generated form with data.
+         * @param {Array} fieldsDefinition - Array defining the fields.
+         * @param {string} formTypePrefix - 'reg', 'data', or 'assign'.
+         * @param {object} data - The data object to populate the form with.
+         */
+        function populateDynamicForm(fieldsDefinition, formTypePrefix, data) {
+            fieldsDefinition.forEach(field => {
+                const inputId = formTypePrefix + field.id;
+                const inputElement = document.getElementById(inputId);
+                if (inputElement && data[field.id] !== undefined) {
+                    inputElement.value = data[field.id];
+                }
+            });
+        }
+
+        // --- Core Logic Functions ---
+
+        /**
+         * Handles login process. Can be called with a personnelNo for auto-login.
+         * @param {string|null} personnelNoToLogin - Optional personnel number to log in with.
+         */
+        async function handleLogin(personnelNoToLogin = null) {
+            const personnelNo = personnelNoToLogin || personnelNoInput.value.trim();
+
+            if (!personnelNo) {
+                showMessage("Please enter your Personnel No.", true);
+                return;
+            }
+
+            // Check if the personnel number exists in the database
+            const userProfileRef = ref(rtdb, `users/${personnelNo}/profile_data`);
+            try {
+                const snapshot = await get(userProfileRef);
+                if (!snapshot.exists()) {
+                    showMessage(`Personnel No. ${personnelNo} not found. Please register or enter a valid number.`, true);
+                    // If auto-login failed, clear local storage
+                    if (personnelNoToLogin) {
+                        localStorage.removeItem('loggedInPersonnelNo');
+                    }
+                    return;
+                }
+                currentUserName = snapshot.val().Name_of_Employee || "Unknown User"; // Get user's name for chat
+            } catch (error) {
+                console.error("Error checking personnel number existence during login:", error);
+                showMessage(`Login failed: ${error.message}`, true);
+                // If auto-login failed, clear local storage
+                if (personnelNoToLogin) {
+                    localStorage.removeItem('loggedInPersonnelNo');
+                }
+                return;
+            }
+
+            currentUserId = personnelNo;
+            localStorage.setItem('loggedInPersonnelNo', personnelNo); // Store login state
+            userIdDisplay.textContent = personnelNo;
+            showTopLevelSection(loggedInContent);
+            showContentSection(homeSection, loadHomeData); // Default to Home after login, and load its data
+            showMessage(`Successfully logged in as Personnel No. ${personnelNo}`, false);
+            checkAdminPermissions(); // Check and show admin buttons
+        }
+
+        /**
+         * Handles user logout.
+         */
+        async function handleLogout() {
+            currentUserId = null;
+            currentUserName = "Unknown User";
+            localStorage.removeItem('loggedInPersonnelNo'); // Clear login state
+            personnelNoInput.value = ''; // Clear login input field
+            homeDataContainer.innerHTML = ''; // Clear home data
+            assignmentDisplay.innerHTML = ''; // Clear assignment data
+            profileDataDisplay.innerHTML = ''; // Clear profile data
+            chatWindow.innerHTML = ''; // Clear chat messages
+            showTopLevelSection(loginSection);
+            showMessage("Logged out successfully.", false);
+        }
+
+        /**
+         * Checks if the current user is the admin and shows/hides edit buttons.
+         */
+        function checkAdminPermissions() {
+            if (currentUserId === ADMIN_PERSONNEL_NO) {
+                // Dynamically add/remove edit buttons for home content types
+                homeScreenContentDefinitions.forEach(contentType => {
+                    const editBtnId = `edit_${contentType.id}_Btn`;
+                    let button = document.getElementById(editBtnId);
+                    if (!button) {
+                        const containerDiv = document.getElementById(`home-content-${contentType.id}`);
+                        if (containerDiv) {
+                            button = document.createElement('button');
+                            button.id = editBtnId;
+                            button.className = 'btn edit-section-btn';
+                            button.textContent = `Add/Edit ${contentType.label}`;
+                            button.addEventListener('click', () => navigateToEditHomeData(contentType.id));
+                            containerDiv.appendChild(button);
+                        }
+                    } else {
+                        button.classList.remove('hidden');
+                    }
+                });
+                addAssignmentBtn.classList.remove('hidden');
+            } else {
+                // Hide all dynamic edit buttons for non-admin
+                homeScreenContentDefinitions.forEach(contentType => {
+                    const editBtnId = `edit_${contentType.id}_Btn`;
+                    const button = document.getElementById(editBtnId);
+                    if (button) {
+                        button.classList.add('hidden');
+                    }
+                });
+                addAssignmentBtn.classList.add('hidden');
+            }
+        }
+
+        // --- Home Section Logic ---
+
+        /**
+         * Loads home screen data from Firebase Realtime Database and displays it.
+         */
+        async function loadHomeData() {
+            console.log("Attempting to load home data for user:", currentUserId);
+            if (!currentUserId) {
+                homeDataContainer.innerHTML = 'No user logged in.';
+                return;
+            }
+
+            homeDataContainer.innerHTML = '<p class="text-gray-500 text-center">Loading Home data...</p>'; // Loading indicator
+
+            // Fetch and display each type of home content
+            for (const contentType of homeScreenContentDefinitions) {
+                const contentDiv = document.createElement('div');
+                contentDiv.id = `home-content-${contentType.id}`;
+                contentDiv.className = 'home-content-section';
+                homeDataContainer.appendChild(contentDiv);
+
+                const header = document.createElement('h3');
+                header.className = 'text-xl font-semibold text-gray-700 mb-3';
+                header.textContent = contentType.label;
+                contentDiv.appendChild(header);
+
+                const dataDisplayDiv = document.createElement('div');
+                dataDisplayDiv.className = 'data-display';
+                contentDiv.appendChild(dataDisplayDiv);
+                dataDisplayDiv.innerHTML = '<p class="text-gray-500 text-center">Loading...</p>'; // Loading indicator for each section
+
+                const dataRef = ref(rtdb, `users/${ADMIN_PERSONNEL_NO}/home_screen_data/${contentType.id}`);
+
+                // Attach listener and store its unsubscribe function
+                const unsubscribe = onValue(dataRef, (snapshot) => {
+                    console.log(`Home data (${contentType.id}) snapshot received:`, snapshot.val());
+                    // Check if the current section is active before displaying/notifying
+                    const isCurrentSectionActive = homeSection.classList.contains('content-section') && !homeSection.classList.contains('hidden');
+
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        if (contentType.displayType === 'table') {
+                            displayTableData(dataDisplayDiv, data, contentType.fields, contentType.id);
+                        } else if (contentType.displayType === 'list') {
+                            displayListData(dataDisplayDiv, data, contentType.fields, contentType.id);
+                        }
+
+                        // Only show notification if data changed and user is NOT on the home section
+                        if (!isCurrentSectionActive && Object.keys(data).length > 0) { // Check for actual data change
+                            showAppNotification(`New update in ${contentType.label}!`, 'info');
+                        } else if (isCurrentSectionActive) {
+                             showMessage(`${contentType.label} loaded.`, false);
+                        }
+                    } else {
+                        dataDisplayDiv.innerHTML = `No ${contentType.label.toLowerCase()} found.`;
+                        if (!isCurrentSectionActive) {
+                            showAppNotification(`No ${contentType.label.toLowerCase()} found.`, 'info');
+                        } else {
+                            showMessage(`No ${contentType.label.toLowerCase()} found.`, false);
+                        }
+
+                        // Pre-populate DY DEOs data if admin and no data exists
+                        if (contentType.id === 'dy_deos_info' && currentUserId === ADMIN_PERSONNEL_NO && initialDyDeosData.length > 0) {
+                            console.log("Pre-populating initial DY DEOs data...");
+                            const dyDeosRef = ref(rtdb, `users/${ADMIN_PERSONNEL_NO}/home_screen_data/dy_deos_info`);
+                            initialDyDeosData.forEach(async (item) => {
+                                await push(dyDeosRef, item);
+                            });
+                            showAppNotification("Initial DY DEOs data pre-populated. Refreshing...", false);
+                            // Reload data after pre-population
+                            // The onValue listener will automatically re-render, so no explicit reload needed.
+                        }
+                    }
+                }, (error) => {
+                    console.error(`Error loading ${contentType.label.toLowerCase()}:`, error);
+                    showMessage(`Failed to load ${contentType.label.toLowerCase()}: ${error.message}`, true);
+                });
+                currentActiveListeners[`home_${contentType.id}`] = unsubscribe; // Store unsubscribe function
+
+                // Add edit button if admin
+                if (currentUserId === ADMIN_PERSONNEL_NO) {
+                    const editBtn = document.createElement('button');
+                    editBtn.id = `edit_${contentType.id}_Btn`;
+                    editBtn.className = 'btn edit-section-btn';
+                    editBtn.textContent = `Add/Edit ${contentType.label}`;
+                    editBtn.addEventListener('click', () => navigateToEditHomeData(contentType.id));
+                    contentDiv.appendChild(editBtn);
+                }
+            }
+            checkAdminPermissions(); // Re-check permissions after loading content
+        }
+
+        /**
+         * Displays data in a table format.
+         * @param {HTMLElement} displayElement - The div to append the table to.
+         * @param {object} data - The data object (e.g., {itemId: {field: value}}).
+         * @param {Array} fieldsDefinition - The fields array for this data type.
+         * @param {string} contentTypeId - The ID of the content type (e.g., 'dy_deos_info').
+         */
+        function displayTableData(displayElement, data, fieldsDefinition, contentTypeId) {
+            const table = document.createElement('table');
+            table.className = 'data-table';
+
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            fieldsDefinition.forEach(field => {
+                const th = document.createElement('th');
+                th.textContent = field.label;
+                headerRow.appendChild(th);
+            });
+            if (currentUserId === ADMIN_PERSONNEL_NO) {
+                const actionsTh = document.createElement('th');
+                actionsTh.textContent = 'Actions';
+                headerRow.appendChild(actionsTh);
+            }
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            for (const itemId in data) {
+                if (Object.hasOwnProperty.call(data, itemId)) {
+                    const item = data[itemId];
+                    const row = document.createElement('tr');
+                    fieldsDefinition.forEach(field => {
+                        const td = document.createElement('td');
+                        td.textContent = item[field.id] || 'N/A';
+                        row.appendChild(td);
+                    });
+
+                    if (currentUserId === ADMIN_PERSONNEL_NO) {
+                        const actionsTd = document.createElement('td');
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-md text-sm mr-2';
+                        editBtn.textContent = 'Edit';
+                        editBtn.onclick = () => navigateToEditHomeData(contentTypeId, itemId, item); // Pass contentTypeId, item ID and data
+                        actionsTd.appendChild(editBtn);
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md text-sm';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.onclick = () => deleteHomeDataItem(contentTypeId, itemId);
+                        actionsTd.appendChild(deleteBtn);
+                        row.appendChild(actionsTd);
+                    }
+                    tbody.appendChild(row);
+                }
+            }
+            table.appendChild(tbody);
+            displayElement.appendChild(table);
+        }
+
+        /**
+         * Displays data in a list format.
+         * @param {HTMLElement} displayElement - The div to append the list to.
+         * @param {object} data - The data object (e.g., {itemId: {field: value}}).
+         * @param {Array} fieldsDefinition - The fields array for this data type.
+         * @param {string} contentTypeId - The ID of the content type (e.g., 'short_blog_posts').
+         */
+        function displayListData(displayElement, data, fieldsDefinition, contentTypeId) {
+            const ul = document.createElement('ul');
+            ul.className = 'list-disc list-inside text-gray-700';
+            for (const itemId in data) {
+                if (Object.hasOwnProperty.call(data, itemId)) {
+                    const item = data[itemId];
+                    const li = document.createElement('li');
+                    let displayText = '';
+                    fieldsDefinition.forEach(field => {
+                        displayText += `${field.label}: ${item[field.id] || 'N/A'}; `;
+                    });
+                    li.textContent = displayText.trim();
+
+                    if (currentUserId === ADMIN_PERSONNEL_NO) {
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-md text-sm ml-2';
+                        editBtn.textContent = 'Edit';
+                        editBtn.onclick = () => navigateToEditHomeData(contentTypeId, itemId, item); // Pass contentTypeId, item ID and data
+                        li.appendChild(editBtn);
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md text-sm ml-2';
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.onclick = () => deleteHomeDataItem(contentTypeId, itemId);
+                        li.appendChild(deleteBtn);
+                    }
+                    ul.appendChild(li);
+                }
+            }
+            displayElement.appendChild(ul);
+        }
+
+        /**
+         * Deletes a specific item from a home screen data sub-collection.
+         * @param {string} contentTypeId - The ID of the content type (e.g., 'dy_deos_info').
+         * @param {string} itemId - The unique ID of the item to delete.
+         */
+        async function deleteHomeDataItem(contentTypeId, itemId) {
+            if (currentUserId !== ADMIN_PERSONNEL_NO) {
+                showMessage("You do not have permission to delete this data.", true);
+                return;
+            }
+            if (!confirm(`Are you sure you want to delete this ${homeScreenContentDefinitions.find(d => d.id === contentTypeId).label} entry?`)) {
+                return;
+            }
+
+            const itemRef = ref(rtdb, `users/${ADMIN_PERSONNEL_NO}/home_screen_data/${contentTypeId}/${itemId}`);
+            try {
+                await remove(itemRef);
+                showMessage("Item deleted successfully!", false);
+                // No need to reloadHomeData here, onValue listener will handle it
+            } catch (error) {
+                console.error("Error deleting item:", error);
+                showMessage(`Failed to delete item: ${error.message}`, true);
+            }
+        }
+
+        /**
+         * Navigates to the data entry section for home screen data.
+         * @param {string} contentTypeId - The ID of the home content type to edit (e.g., 'dy_deos_info').
+         * @param {string|null} itemId - Optional. The unique ID of the item being edited (for existing items).
+         * @param {object|null} itemData - Optional. The data of the item being edited.
+         */
+        async function navigateToEditHomeData(contentTypeId, itemId = null, itemData = null) {
+            if (currentUserId !== ADMIN_PERSONNEL_NO) {
+                showMessage("You do not have permission to edit home data.", true);
+                return;
+            }
+            currentEditingDataType = `home_${contentTypeId}`; // e.g., 'home_dy_deos_info'
+            currentEditingItemId = itemId; // Store item ID for editing existing entries
+
+            showTopLevelSection(dataEntrySection);
+            dataEntryPersonnelNoDisplay.textContent = currentUserId;
+
+            const contentTypeDef = homeScreenContentDefinitions.find(def => def.id === contentTypeId);
+            if (!contentTypeDef) {
+                showMessage("Invalid home content type.", true);
+                return;
+            }
+
+            dataEntryDataTypeDisplay.textContent = `Edit ${contentTypeDef.label}`;
+            generateDynamicFormFields(dynamicDataEntryForm, contentTypeDef.fields, 'data', currentUserId);
+
+            if (itemData) {
+                // Populate form for editing existing item
+                populateDynamicForm(contentTypeDef.fields, 'data', itemData);
+            } else {
+                // Clear form for new item
+                dynamicDataEntryForm.reset();
+            }
+        }
+
+
+        // --- Assignment Section Logic ---
+
+        /**
+         * Loads assignments from Firebase Realtime Database and displays them.
+         */
+        async function loadAssignments() {
+            console.log("Attempting to load assignments.");
+            assignmentDisplay.innerHTML = '<p class="text-gray-500 text-center">Loading Assignments...</p>'; // Loading indicator
+            const assignmentsRef = ref(rtdb, `admin_data/assignments`);
+
+            // Attach listener and store its unsubscribe function
+            const unsubscribe = onValue(assignmentsRef, (snapshot) => {
+                console.log("Assignments snapshot received:", snapshot.val());
+                const isCurrentSectionActive = assignmentSection.classList.contains('content-section') && !assignmentSection.classList.contains('hidden');
+
+                assignmentDisplay.innerHTML = ''; // Clear previous content
+                if (snapshot.exists()) {
+                    const assignments = snapshot.val();
+                    const ul = document.createElement('ul');
+                    ul.className = 'list-disc list-inside text-gray-700';
+                    for (const key in assignments) {
+                        if (Object.hasOwnProperty.call(assignments, key)) {
+                            const li = document.createElement('li');
+                            li.textContent = assignments[key].Assignment_Title;
+
+                            if (currentUserId === ADMIN_PERSONNEL_NO) {
+                                const editBtn = document.createElement('button');
+                                editBtn.className = 'bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-md text-sm ml-2';
+                                editBtn.textContent = 'Edit';
+                                editBtn.onclick = () => navigateToAddAssignment(key, assignments[key]); // Pass item ID and data
+                                li.appendChild(editBtn);
+
+                                const deleteBtn = document.createElement('button');
+                                deleteBtn.className = 'bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-md text-sm ml-2';
+                                deleteBtn.textContent = 'Delete';
+                                deleteBtn.onclick = () => deleteAssignment(key);
+                                li.appendChild(deleteBtn);
+                            }
+                            ul.appendChild(li);
+                        }
+                    }
+                    assignmentDisplay.appendChild(ul);
+                    if (!isCurrentSectionActive) {
+                        showAppNotification("New assignment posted!", 'info');
+                    } else {
+                        showMessage("Assignments loaded.", false);
+                    }
+                } else {
+                    assignmentDisplay.innerHTML = 'No assignments found.';
+                    if (!isCurrentSectionActive) {
+                        showAppNotification("No assignments found.", 'info');
+                    } else {
+                        showMessage("No assignments found.", false);
+                    }
+                }
+            }, (error) => {
+                console.error("Error loading assignments:", error);
+                showMessage(`Failed to load assignments: ${error.message}`, true);
+            });
+            currentActiveListeners['assignments'] = unsubscribe; // Store unsubscribe function
+        }
+
+        /**
+         * Deletes a specific assignment.
+         * @param {string} assignmentId - The unique ID of the assignment to delete.
+         */
+        async function deleteAssignment(assignmentId) {
+            if (currentUserId !== ADMIN_PERSONNEL_NO) {
+                showMessage("You do not have permission to delete assignments.", true);
+                return;
+            }
+            if (!confirm("Are you sure you want to delete this assignment?")) {
+                return;
+            }
+
+            const assignmentRef = ref(rtdb, `admin_data/assignments/${assignmentId}`);
+            try {
+                await remove(assignmentRef);
+                showMessage("Assignment deleted successfully!", false);
+                // No need to reloadAssignments here, onValue listener will handle it
+            } catch (error) {
+                console.error("Error deleting assignment:", error);
+                showMessage(`Failed to delete assignment: ${error.message}`, true);
+            }
+        }
+
+        /**
+         * Navigates to the data entry section for adding/editing assignments.
+         * @param {string|null} assignmentId - Optional. The unique ID of the assignment being edited.
+         * @param {object|null} assignmentData - Optional. The data of the assignment being edited.
+         */
+        async function navigateToAddAssignment(assignmentId = null, assignmentData = null) {
+            if (currentUserId !== ADMIN_PERSONNEL_NO) {
+                showMessage("You do not have permission to add/edit assignments.", true);
+                return;
+            }
+            currentEditingDataType = 'assignment';
+            currentEditingItemId = assignmentId; // Store assignment ID for editing existing entries
+
+            showTopLevelSection(dataEntrySection);
+            dataEntryPersonnelNoDisplay.textContent = currentUserId;
+            dataEntryDataTypeDisplay.textContent = assignmentId ? 'Edit Assignment' : 'New Assignment';
+            generateDynamicFormFields(dynamicDataEntryForm, assignmentFields, 'data', currentUserId);
+
+            if (assignmentData) {
+                populateDynamicForm(assignmentFields, 'data', assignmentData);
+            } else {
+                dynamicDataEntryForm.reset(); // Clear form for new entry
+            }
+        }
+
+        // --- Chat Section Logic ---
+        const CHAT_MESSAGE_LIFESPAN = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+        /**
+         * Loads chat messages from Firebase Realtime Database and displays them.
+         */
+        async function loadChatMessages() {
+            console.log("Attempting to load chat messages.");
+            chatWindow.innerHTML = '<p class="text-gray-500 text-center">Loading messages...</p>'; // Loading indicator
+            const chatMessagesRef = ref(rtdb, `chat_messages`);
+            const recentMessagesQuery = query(chatMessagesRef, orderByChild('timestamp'), limitToLast(50)); // Load last 50 messages
+
+            // Attach listener and store its unsubscribe function
+            const unsubscribe = onValue(recentMessagesQuery, (snapshot) => {
+                console.log("Chat messages snapshot received:", snapshot.val());
+                const isCurrentSectionActive = chatSection.classList.contains('content-section') && !chatSection.classList.contains('hidden');
+
+                chatWindow.innerHTML = ''; // Clear previous messages to redraw all
+                if (snapshot.exists()) {
+                    const messages = snapshot.val();
+                    const messageIdsToDelete = [];
+                    let newMessageCount = 0;
+                    for (const messageId in messages) {
+                        if (Object.hasOwnProperty.call(messages, messageId)) {
+                            const message = messages[messageId];
+                            const messageAge = Date.now() - message.timestamp;
+
+                            if (messageAge > CHAT_MESSAGE_LIFESPAN) {
+                                messageIdsToDelete.push(messageId);
+                            } else {
+                                const messageDiv = document.createElement('div');
+                                messageDiv.className = `chat-message ${message.senderId === currentUserId ? 'self' : 'other'}`;
+
+                                const senderSpan = document.createElement('div');
+                                senderSpan.className = 'chat-sender';
+                                senderSpan.textContent = `${message.senderName} (${message.senderId})`;
+                                messageDiv.appendChild(senderSpan);
+
+                                const contentP = document.createElement('p');
+                                contentP.textContent = message.messageContent;
+                                messageDiv.appendChild(contentP);
+
+                                const timestampSpan = document.createElement('div');
+                                timestampSpan.className = 'chat-timestamp';
+                                timestampSpan.textContent = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                messageDiv.appendChild(timestampSpan);
+
+                                chatWindow.appendChild(messageDiv);
+
+                                // Count new messages if not currently in chat and it's not our own message
+                                if (!isCurrentSectionActive && message.senderId !== currentUserId) {
+                                    newMessageCount++;
+                                }
+                            }
+                        }
+                    }
+                    // Scroll to bottom
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                    // Show notification if new messages and not in chat section
+                    if (newMessageCount > 0 && !isCurrentSectionActive) {
+                        showAppNotification(`New message${newMessageCount > 1 ? 's' : ''} in chat!`, 'info');
+                    } else if (isCurrentSectionActive) {
+                        showMessage("Chat messages loaded.", false);
+                    }
+
+
+                    // Delete old messages (client-side demonstration)
+                    if (messageIdsToDelete.length > 0) {
+                        console.log("Deleting old messages:", messageIdsToDelete);
+                        messageIdsToDelete.forEach(async (id) => {
+                            await remove(ref(rtdb, `chat_messages/${id}`));
+                        });
+                        showMessage(`Cleaned up ${messageIdsToDelete.length} old messages.`, false);
+                    }
+                } else {
+                    chatWindow.innerHTML = '<p class="text-gray-500 text-center">No messages yet. Start chatting!</p>';
+                    if (isCurrentSectionActive) {
+                        showMessage("No messages yet. Start chatting!", false);
+                    }
+                }
+            }, (error) => {
+                console.error("Error loading chat messages:", error);
+                showMessage(`Failed to load chat messages: ${error.message}`, true);
+            });
+            currentActiveListeners['chat'] = unsubscribe; // Store unsubscribe function
+        }
+
+        /**
+         * Sends a chat message.
+         */
+        async function sendChatMessage() {
+            const messageContent = chatMessageInput.value.trim();
+            if (!messageContent) {
+                showMessage("Message cannot be empty.", true);
+                return;
+            }
+            if (!currentUserId) {
+                showMessage("Please log in to send messages.", true);
+                return;
+            }
+
+            const messagesRef = ref(rtdb, `chat_messages`);
+            try {
+                await push(messagesRef, {
+                    senderId: currentUserId,
+                    senderName: currentUserName, // Use the fetched currentUserName
+                    messageContent: messageContent,
+                    timestamp: serverTimestamp() // Use Firebase server timestamp
+                });
+                chatMessageInput.value = ''; // Clear input field
+                // No need for showMessage here, onValue listener will handle display and notification
+            } catch (error) {
+                console.error("Error sending message:", error);
+                showMessage(`Failed to send message: ${error.message}`, true);
+            }
+        }
+
+        /**
+         * Function to periodically delete messages older than 24 hours.
+         * This is a client-side demonstration and not reliable for production.
+         */
+        async function deleteOldMessagesPeriodically() {
+            const messagesRef = ref(rtdb, `chat_messages`);
+            const twentyFourHoursAgo = Date.now() - CHAT_MESSAGE_LIFESPAN;
+
+            // Query for messages older than 24 hours
+            const oldMessagesQuery = query(messagesRef, orderByChild('timestamp'), endAt(twentyFourHoursAgo));
+
+            try {
+                const snapshot = await get(oldMessagesQuery);
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnapshot => {
+                        remove(childSnapshot.ref); // Delete each old message
+                        console.log(`Deleted old message: ${childSnapshot.key}`);
+                    });
+                    showAppNotification("Old chat messages cleaned up.", 'info');
+                }
+            } catch (error) {
+                console.error("Error cleaning up old messages:", error);
+            }
+        }
+
+        // Set up periodic cleanup (e.g., every 5 minutes)
+        setInterval(deleteOldMessagesPeriodically, 5 * 60 * 1000); // 5 minutes
+
+        // --- Profile Section Logic ---
+
+        /**
+         * Loads user profile data from Firebase Realtime Database and displays it in a categorized table.
+         */
+        async function loadPersonnelData() {
+            console.log("Attempting to load profile data for user:", currentUserId);
+            if (!currentUserId) {
+                profileDataDisplay.innerHTML = 'No user logged in.';
+                return;
+            }
+
+            profileDataDisplay.innerHTML = '<p class="text-gray-500 text-center">Loading Profile data...</p>'; // Loading indicator
+            const userRef = ref(rtdb, `users/${currentUserId}/profile_data`);
+
+            // Attach listener and store its unsubscribe function
+            const unsubscribe = onValue(userRef, (snapshot) => {
+                console.log("Profile data snapshot received:", snapshot.val());
+                const isCurrentSectionActive = profileSection.classList.contains('content-section') && !profileSection.classList.contains('hidden');
+
+                profileDataDisplay.innerHTML = ''; // Clear previous content
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const categories = {
+                        'Personal Info': [],
+                        'Financial Info': [],
+                        'Institute Info': [],
+                        'Other': []
+                    };
+
+                    personnelProfileFields.forEach(field => {
+                        const category = field.category || 'Other';
+                        // Ensure the category exists before pushing
+                        if (!categories[category]) {
+                            categories[category] = [];
+                        }
+                        categories[category].push({
+                            label: field.label,
+                            value: data[field.id] || 'N/A'
+                        });
+                    });
+
+                    // Define display order for categories
+                    const categoryOrder = ['Personal Info', 'Financial Info', 'Institute Info', 'Other'];
+
+                    categoryOrder.forEach(categoryName => {
+                        if (categories[categoryName].length > 0) {
+                            const categoryHeader = document.createElement('h4');
+                            categoryHeader.className = 'section-header';
+                            let emoji = '';
+                            if (categoryName === 'Personal Info') emoji = ' ';
+                            else if (categoryName === 'Financial Info') emoji = '💳';
+                            else if (categoryName === 'Institute Info') emoji = '🏫';
+                            else emoji = 'ℹ️';
+                            categoryHeader.textContent = `${emoji} ${categoryName}`;
+                            profileDataDisplay.appendChild(categoryHeader);
+
+                            const table = document.createElement('table');
+                            table.className = 'data-table';
+                            const tbody = document.createElement('tbody');
+
+                            categories[categoryName].forEach(item => {
+                                const row = document.createElement('tr');
+                                const labelCell = document.createElement('td');
+                                labelCell.className = 'font-semibold';
+                                labelCell.textContent = item.label;
+                                const valueCell = document.createElement('td');
+                                valueCell.textContent = item.value;
+                                row.appendChild(labelCell);
+                                row.appendChild(valueCell);
+                                tbody.appendChild(row);
+                            });
+                            table.appendChild(tbody);
+                            profileDataDisplay.appendChild(table);
+                        }
+                    });
+                    if (!isCurrentSectionActive) {
+                        showAppNotification("Your profile data has been updated!", 'info');
+                    } else {
+                        showMessage("Profile data loaded.", false);
+                    }
+                } else {
+                    profileDataDisplay.innerHTML = 'No profile data found. Click "Edit Profile Data" to add it.';
+                    if (!isCurrentSectionActive) {
+                        showAppNotification("No profile data found.", 'info');
+                    } else {
+                        showMessage("No profile data found.", false);
+                    }
+                }
+            }, (error) => {
+                console.error("Error loading profile data:", error);
+                showMessage(`Failed to load profile data: ${error.message}`, true);
+            });
+            currentActiveListeners['profile'] = unsubscribe; // Store unsubscribe function
+        }
+
+        /**
+         * Navigates to the data entry section for profile data.
+         */
+        async function navigateToEditProfileData() {
+            if (!currentUserId) {
+                showMessage("Please log in first.", true);
+                showTopLevelSection(loginSection);
+                return;
+            }
+            currentEditingDataType = 'profile';
+            currentEditingItemId = null; // Not editing a specific sub-item for profile
+            showTopLevelSection(dataEntrySection);
+            dataEntryPersonnelNoDisplay.textContent = currentUserId;
+            dataEntryDataTypeDisplay.textContent = 'Profile Data';
+            generateDynamicFormFields(dynamicDataEntryForm, personnelProfileFields, 'data', currentUserId);
+
+            const userRef = ref(rtdb, `users/${currentUserId}/profile_data`);
+            try {
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    populateDynamicForm(personnelProfileFields, 'data', snapshot.val());
+                } else {
+                    dynamicDataEntryForm.reset();
+                    document.getElementById('dataPersonnel_No').value = currentUserId; // Ensure Personnel No. is set
+                }
+            } catch (error) {
+                console.error("Error loading profile data for edit:", error);
+                showMessage(`Failed to load profile data for edit: ${error.message}`, true);
+            }
+        }
+
+        // --- Registration Logic ---
+
+        /**
+         * Navigates to the registration section.
+         */
+        function navigateToRegistration() {
+            registrationForm.reset(); // Clear form on navigation
+            generateDynamicFormFields(registrationForm, personnelProfileFields, 'reg');
+            showTopLevelSection(registrationSection);
+        }
+
+        /**
+         * Handles the registration process.
+         */
+        async function handleRegistration() {
+            const personnelNoInput = document.getElementById('regPersonnel_No');
+            const personnelNo = personnelNoInput.value.trim();
+
+            if (!personnelNo) {
+                showMessage("Personnel No. is required for registration.", true);
+                return;
+            }
+
+            // Check if personnel number already exists
+            const userRef = ref(rtdb, `users/${personnelNo}/profile_data`);
+            try {
+                const snapshot = await get(userRef);
+                if (snapshot.exists()) {
+                    showMessage(`Personnel No. ${personnelNo} already exists. Please use a different one or log in.`, true);
+                    return;
+                }
+            } catch (error) {
+                console.error("Error checking personnel number existence:", error);
+                showMessage(`Error during registration: ${error.message}`, true);
+                return;
+            }
+
+            const dataToSave = getDynamicFormData(personnelProfileFields, 'reg');
+            let allRequiredFieldsFilled = true;
+
+            personnelProfileFields.forEach(field => {
+                if (field.required && !dataToSave[field.id]) {
+                    allRequiredFieldsFilled = false;
+                    document.getElementById(`reg${field.id}`).style.borderColor = '#ef4444';
+                } else if (document.getElementById(`reg${field.id}`)) {
+                    document.getElementById(`reg${field.id}`).style.borderColor = '#d1d5db';
+                }
+            });
+
+            if (!allRequiredFieldsFilled) {
+                showMessage("Please fill in all required fields.", true);
+                return;
+            }
+
+            try {
+                await set(userRef, dataToSave);
+                showMessage(`Personnel ${personnelNo} registered successfully! You can now log in.`, false);
+                registrationForm.reset();
+                personnelNoInput.value = personnelNo;
+                showTopLevelSection(loginSection);
+            } catch (error) {
+                console.error("Error saving registration data:", error);
+                showMessage(`Registration failed: ${error.message}`, true);
+            }
+        }
+
+        // --- Save Dynamic Data (Unified for Home, Profile, Assignment) ---
+
+        /**
+         * Saves data from the dynamic data entry form to Firebase Realtime Database.
+         */
+        async function saveDynamicData() {
+            if (!currentUserId) {
+                showMessage("Personnel No. is missing. Cannot save data.", true);
+                showTopLevelSection(loginSection);
+                return;
+            }
+
+            let dataToSave = {};
+            let dbRef;
+            let fieldsDefinition = [];
+
+            if (currentEditingDataType === 'profile') {
+                dataToSave = getDynamicFormData(personnelProfileFields, 'data');
+                dbRef = ref(rtdb, `users/${currentUserId}/profile_data`);
+                fieldsDefinition = personnelProfileFields;
+            } else if (currentEditingDataType.startsWith('home_')) {
+                if (currentUserId !== ADMIN_PERSONNEL_NO) {
+                    showMessage("You do not have permission to save home data.", true);
+                    return;
+                }
+                const contentTypeId = currentEditingDataType.substring('home_'.length);
+                const contentTypeDef = homeScreenContentDefinitions.find(def => def.id === contentTypeId);
+                if (!contentTypeDef) {
+                    showMessage("Invalid home content type for saving.", true);
+                    return;
+                }
+                dataToSave = getDynamicFormData(contentTypeDef.fields, 'data');
+                fieldsDefinition = contentTypeDef.fields;
+
+                if (currentEditingItemId) {
+                    // Editing an existing item within a home sub-collection
+                    dbRef = ref(rtdb, `users/${ADMIN_PERSONNEL_NO}/home_screen_data/${contentTypeId}/${currentEditingItemId}`);
+                } else {
+                    // Adding a new item to a home sub-collection
+                    dbRef = push(ref(rtdb, `users/${ADMIN_PERSONNEL_NO}/home_screen_data/${contentTypeId}`));
+                }
+
+            } else if (currentEditingDataType === 'assignment') {
+                if (currentUserId !== ADMIN_PERSONNEL_NO) {
+                    showMessage("You do not have permission to save assignments.", true);
+                    return;
+                }
+                dataToSave = getDynamicFormData(assignmentFields, 'data');
+                fieldsDefinition = assignmentFields;
+
+                if (currentEditingItemId) {
+                    // Editing an existing assignment
+                    dbRef = ref(rtdb, `admin_data/assignments/${currentEditingItemId}`);
+                } else {
+                    // Adding a new assignment
+                    dbRef = push(ref(rtdb, `admin_data/assignments`));
+                }
+            } else {
+                showMessage("Unknown data type to save.", true);
+                return;
+            }
+
+            // Validate required fields for the current data type
+            let allRequiredFieldsFilled = true;
+            fieldsDefinition.forEach(field => {
+                if (field.required && !dataToSave[field.id]) {
+                    allRequiredFieldsFilled = false;
+                    document.getElementById(`data${field.id}`).style.borderColor = '#ef4444';
+                } else if (document.getElementById(`data${field.id}`)) {
+                    document.getElementById(`data${field.id}`).style.borderColor = '#d1d5db';
+                }
+            });
+
+            if (!allRequiredFieldsFilled) {
+                showMessage("Please fill in all required fields.", true);
+                return;
+            }
+
+            try {
+                await set(dbRef, dataToSave);
+                showMessage("Data saved successfully to Realtime Database!", false);
+                // Go back to the appropriate section after saving
+                if (currentEditingDataType === 'profile') {
+                    showContentSection(profileSection, loadPersonnelData);
+                } else if (currentEditingDataType.startsWith('home_')) {
+                    showContentSection(homeSection, loadHomeData);
+                } else if (currentEditingDataType === 'assignment') {
+                    showContentSection(assignmentSection, loadAssignments);
+                }
+                currentEditingItemId = null; // Clear item ID after saving
+            } catch (error) {
+                console.error("Error saving data:", error);
+                showMessage(`Failed to save data: ${error.message}`, true);
+            }
+        }
+
+        // --- Initialization ---
+
+        /**
+         * Initializes Firebase services and sets up initial view.
+         */
+        async function initializeFirebase() {
+            try {
+                console.log("Initializing Firebase with config:", firebaseConfig);
+
+                if (!app) {
+                    app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    rtdb = getDatabase(app);
+
+                    // Dynamically generate form fields for registration and data entry
+                    generateDynamicFormFields(registrationForm, personnelProfileFields, 'reg');
+                    // Initial generation for data entry form, will be re-generated based on data type
+                    generateDynamicFormFields(dynamicDataEntryForm, personnelProfileFields, 'data');
+
+                    // Check for stored login state
+                    const storedPersonnelNo = localStorage.getItem('loggedInPersonnelNo');
+                    if (storedPersonnelNo) {
+                        console.log("Found stored personnel number:", storedPersonnelNo, ". Attempting auto-login.");
+                        await handleLogin(storedPersonnelNo); // Attempt auto-login
+                    } else {
+                        console.log("No stored personnel number found. Showing login section.");
+                        showTopLevelSection(loginSection);
+                    }
+
+                } else {
+                    console.log("Firebase app already initialized.");
+                }
+
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                showMessage(`Firebase setup failed: ${error.message}`, true);
+            }
+        }
+
+        // --- Event Listeners ---
+        window.onload = initializeFirebase;
+
+        // Login Page Buttons
+        loginBtn.addEventListener('click', () => handleLogin()); // Call without argument for manual login
+        registerPageBtn.addEventListener('click', navigateToRegistration);
+
+        // Logged In Content Navigation (Bottom Bar)
+        navHome.addEventListener('click', () => {
+            if (currentUserId) { showContentSection(homeSection, loadHomeData); } else { showMessage("Please log in.", true); showTopLevelSection(loginSection); }
+        });
+        navAssignment.addEventListener('click', () => {
+            if (currentUserId) { showContentSection(assignmentSection, loadAssignments); } else { showMessage("Please log in.", true); showTopLevelSection(loginSection); }
+        });
+        navSalarySlip.addEventListener('click', () => {
+            if (currentUserId) { showContentSection(salarySlipSection); } else { showMessage("Please log in.", true); showTopLevelSection(loginSection); }
+        });
+        navChat.addEventListener('click', () => {
+            if (currentUserId) { showContentSection(chatSection, loadChatMessages); } else { showMessage("Please log in.", true); showTopLevelSection(loginSection); }
+        }); // New chat nav listener
+        navProfile.addEventListener('click', () => {
+            if (currentUserId) { showContentSection(profileSection, loadPersonnelData); } else { showMessage("Please log in.", true); showTopLevelSection(loginSection); }
+        });
+
+        // Specific Section Buttons (Home and Profile edit buttons are now dynamically added/removed)
+        // editHomeDataBtn.addEventListener('click', navigateToEditHomeData); // Removed, handled dynamically
+        addAssignmentBtn.addEventListener('click', () => navigateToAddAssignment()); // Call without arguments for new assignment
+        editProfileDataBtn.addEventListener('click', navigateToEditProfileData);
+        logoutBtn.addEventListener('click', handleLogout);
+
+        // Chat Buttons
+        sendChatMessageBtn.addEventListener('click', sendChatMessage);
+        chatMessageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+
+        // Registration Page Buttons
+        registerBtn.addEventListener('click', handleRegistration);
+        backToLoginFromRegisterBtn.addEventListener('click', () => showTopLevelSection(loginSection));
+
+        // Data Entry Page Buttons (Unified)
+        saveDynamicDataBtn.addEventListener('click', saveDynamicData);
+        backFromDataEntryBtn.addEventListener('click', () => {
+            // Determine which section to go back to based on currentEditingDataType
+            if (currentEditingDataType === 'profile') {
+                showContentSection(profileSection, loadPersonnelData);
+            } else if (currentEditingDataType.startsWith('home_')) {
+                showContentSection(homeSection, loadHomeData);
+            } else if (currentEditingDataType === 'assignment') {
+                showContentSection(assignmentSection, loadAssignments);
+            } else {
+                showContentSection(homeSection, loadHomeData); // Default back to home
+            }
+            currentEditingItemId = null; // Clear item ID after returning from data entry
+        });
+    </script>
+</body>
+</html>
+ 
